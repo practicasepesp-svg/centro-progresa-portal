@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import {
-  CheckCircle2, Circle, Compass, FileText, Briefcase, ShieldCheck,
-  GraduationCap, ClipboardCheck, Sparkles, ArrowRight, ExternalLink,
-  Search, Building2, ListChecks, Clock, X, RotateCcw, Award, Users,
-  BookOpen, Calendar, AlertCircle
+  CheckCircle2, Circle, Compass, ShieldCheck,
+  Sparkles, ArrowRight, ExternalLink,
+  Search, Building2, Clock, X, RotateCcw,
+  BookOpen
 } from "lucide-react";
 
 type RouteFilter = "all" | "seeking" | "has_place";
@@ -334,7 +334,6 @@ export default function PortalHome() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-slate-100 flex flex-col">
-      {/* Barra superior institucional */}
       <header className="bg-blue-950/90 backdrop-blur-md border-b border-blue-800/70 sticky top-0 z-30 shadow-xl">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -351,7 +350,6 @@ export default function PortalHome() {
             </div>
           </div>
 
-          {/* Indicador de progreso personal */}
           <div className="flex items-center gap-3 bg-blue-900/70 border border-blue-800 px-3.5 py-2 rounded-xl">
             <div className="text-right">
               <div className="text-[10px] uppercase tracking-wider text-blue-200 font-semibold">
@@ -380,7 +378,6 @@ export default function PortalHome() {
         </div>
       </header>
 
-      {/* Hero + Selector de Ruta */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 lg:py-10 space-y-8">
         <section className="text-center space-y-4">
           <span className="inline-flex items-center gap-1.5 bg-amber-400/15 text-amber-300 border border-amber-400/30 text-[11px] font-bold px-3.5 py-1 rounded-full uppercase tracking-wider">
@@ -394,7 +391,6 @@ export default function PortalHome() {
           </p>
         </section>
 
-        {/* Selector interactivo de situación del estudiante */}
         <section className="bg-blue-900/50 backdrop-blur-md border border-blue-700/70 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
@@ -480,7 +476,6 @@ export default function PortalHome() {
           </div>
         </section>
 
-        {/* Línea de tiempo de Fases */}
         <section className="space-y-4">
           {visiblePhases.map((phase, idx) => {
             const isDone = completedPhases.includes(phase.number);
@@ -521,3 +516,208 @@ export default function PortalHome() {
                             Fase {phase.number}: {phase.title}
                           </h3>
                           {phase.tag && (
+                            <span
+                              className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                                phase.isMergePoint
+                                  ? "bg-emerald-400/20 text-emerald-300 border border-emerald-400/30"
+                                  : phase.onlyForSeeking
+                                  ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
+                                  : "bg-blue-800 text-blue-200"
+                              }`}
+                            >
+                              {phase.tag}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => togglePhaseCompleted(phase.number)}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition cursor-pointer ${
+                        isDone
+                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                          : "bg-blue-950/70 hover:bg-blue-950 text-blue-200 border-blue-800"
+                      }`}
+                    >
+                      {isDone ? (
+                        <>
+                          <CheckCircle2 size={15} className="text-emerald-400" /> Completada
+                        </>
+                      ) : (
+                        <>
+                          <Circle size={15} /> Marcar como completada
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4">
+                    {phase.summary}
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {phase.tools.map((tool, tIdx) => {
+                      if (tool.status === "active" && tool.url) {
+                        return (
+                          <a
+                            key={tIdx}
+                            href={tool.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-amber-400 hover:bg-amber-300 text-blue-950 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-lg shadow-amber-500/15 transition transform hover:-translate-y-0.5"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-[10px] font-black uppercase tracking-wider bg-blue-950 text-amber-400 px-2 py-0.5 rounded">
+                                  Herramienta Activa
+                                </span>
+                                <ExternalLink size={15} />
+                              </div>
+                              <div className="font-extrabold text-sm pt-1">
+                                {tool.label}
+                              </div>
+                              <p className="text-xs text-blue-900 font-medium leading-snug">
+                                {tool.description}
+                              </p>
+                            </div>
+                            <div className="text-xs font-black flex items-center gap-1 pt-1">
+                              Abrir herramienta <ArrowRight size={14} />
+                            </div>
+                          </a>
+                        );
+                      }
+
+                      if (tool.status === "guide" && tool.guideKey) {
+                        return (
+                          <button
+                            key={tIdx}
+                            onClick={() => setActiveGuide(GUIDES_CONTENT[tool.guideKey!])}
+                            className="bg-blue-950/90 hover:bg-blue-950 border border-blue-700 hover:border-amber-400/60 text-left rounded-xl p-4 flex flex-col justify-between gap-3 transition cursor-pointer"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-sky-300 bg-sky-400/15 px-2 py-0.5 rounded">
+                                  Guía Interactiva
+                                </span>
+                                <BookOpen size={14} className="text-sky-300" />
+                              </div>
+                              <div className="font-bold text-sm text-white pt-1">
+                                {tool.label}
+                              </div>
+                              <p className="text-xs text-slate-300 leading-snug">
+                                {tool.description}
+                              </p>
+                            </div>
+                            <div className="text-xs font-bold text-amber-400 flex items-center gap-1 pt-1">
+                              Consultar guía <ArrowRight size={14} />
+                            </div>
+                          </button>
+                        );
+                      }
+
+                      return (
+                        <div
+                          key={tIdx}
+                          className="bg-blue-950/40 border border-blue-800/70 rounded-xl p-4 flex flex-col justify-between gap-3 opacity-80"
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+                                Próximamente
+                              </span>
+                              <Clock size={14} className="text-slate-400" />
+                            </div>
+                            <div className="font-bold text-sm text-slate-200 pt-1">
+                              {tool.label}
+                            </div>
+                            <p className="text-xs text-slate-400 leading-snug">
+                              {tool.description}
+                            </p>
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-400 pt-1">
+                            En desarrollo institucional
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {idx < visiblePhases.length - 1 && (
+                  <div className="flex justify-center">
+                    <div className="h-4 w-0.5 bg-blue-700/80" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </section>
+
+        <footer className="border-t border-blue-800/80 pt-6 pb-4 text-center space-y-2 text-xs text-slate-400">
+          <p className="flex items-center justify-center gap-1.5 text-slate-300 font-medium">
+            <ShieldCheck size={15} className="text-emerald-400" />
+            Plataforma 100% gratuita y protegida bajo la Ley 1581 de 2012 (Habeas Data). Ningún dato personal se envía a servidores externos.
+          </p>
+          <p>
+            Centro Progresa E.P.E. • Prácticas Profesionales • Corporación Universitaria Minuto de Dios - UNIMINUTO Rectoría Bogotá
+          </p>
+        </footer>
+      </main>
+
+      {activeGuide && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setActiveGuide(null)}
+        >
+          <div
+            className="bg-blue-950 border border-blue-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-blue-800 pb-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                  {activeGuide.subtitle}
+                </span>
+                <h3 className="text-lg font-black text-white mt-1">
+                  {activeGuide.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setActiveGuide(null)}
+                className="text-slate-400 hover:text-white bg-blue-900 p-1.5 rounded-lg cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 max-h-[60vh] overflow-y-auto pr-1">
+              {activeGuide.items.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-blue-900/50 border border-blue-800 rounded-xl p-4 space-y-1"
+                >
+                  <h4 className="text-xs font-extrabold text-amber-300">
+                    {item.heading}
+                  </h4>
+                  <p className="text-xs text-slate-200 leading-relaxed">
+                    {item.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setActiveGuide(null)}
+                className="bg-amber-400 hover:bg-amber-300 text-blue-950 text-xs font-extrabold px-5 py-2.5 rounded-xl transition cursor-pointer"
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
